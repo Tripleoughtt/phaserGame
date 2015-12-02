@@ -1,0 +1,20 @@
+.messages{
+  border: 2px solid #000;
+  height: 150px;
+  overflow: scroll;
+  
+}
+
+.column {
+  display: inline-block;
+  height: 30px;
+  width: 30px;
+}
+
+.grid {
+  border: 1px solid #000;
+}
+
+.row {
+  
+}

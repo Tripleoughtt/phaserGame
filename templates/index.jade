@@ -1,0 +1,19 @@
+doctype html(lang='en')
+html
+  head
+    meta(charset='UTF-8')
+    title Social Login
+    link(rel="stylesheet", href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css", media="all")
+    link(rel="stylesheet", href="style.css")
+  body(ng-app='appFrame')
+    div
+    ui-view
+    script(src='vendor/jquery/dist/jquery.min.js')
+    script(src='vendor/angular/angular.js')
+    script(src='vendor/ui-router/release/angular-ui-router.min.js')
+    script(src='vendor/satellizer/satellizer.min.js')
+    script(src='vendor/socket.io-client/socket.io.js')
+    script(src="vendor/angular-socket-io/socket.min.js")
+    script(src='vendor/phaser/build/phaser.min.js')
+    script(src="bundle.js")
+

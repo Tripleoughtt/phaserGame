@@ -1,0 +1,19 @@
+<h1> dofus </h1>
+
+<div>
+
+  login name
+  <input type='text' ng-model='username' placeholder='enter username'>
+  <button ng-click='login(username)'> join game</button>
+  <button ng-click='meleeChar()'> melee char</button>
+  <button ng-click='rangedChar()'> ranged char</button>
+
+
+
+  <div class="messages">
+    <h3 ng-repeat="message in messages track by $index">{{message}}</h3>
+  </div>
+  <input id="message" ng-model="message" type="text" name="message">
+  <button ng-click="sendMessage(message)">
+  </button>
+</div>
