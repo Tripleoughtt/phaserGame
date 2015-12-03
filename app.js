@@ -115,6 +115,7 @@ function onNewPlayer (data) {
 // Player has moved
 function onMovePlayer (data) {
   // Find player in array
+  console.log(data)
   var movePlayer = playerById(this.id)
 
   // Player not found

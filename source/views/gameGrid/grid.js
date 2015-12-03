@@ -12,16 +12,21 @@ angular.module('appFrame')
   var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
 
   function preload() {
-    game.load.image('background', 'assets/background.png', 30, 20)
-    game.load.image('platform', 'assets/platfrom.png')
-    game.load.image('char', 'assets/archer.png', 32, 48);
+    game.load.image('background', 'assets/background.png', 30, 20);
+    game.load.image('platform', 'assets/platfrom.png');
+    game.load.spritesheet('char', 'assets/shooter.png', 90, 89);
+    game.load.image('arrow', 'assets/plasma.png');
 
   }
   var platforms;
   var player;
+  var bullets;
   var cursors;
   var enemies;
+  var bullet;
   var currentSpeed = 0
+  var fireRate = 500;
+  var nextFire = 0;
 
   function create() {
     var startX = Math.floor(Math.random() * (800))
@@ -32,7 +37,15 @@ angular.module('appFrame')
     game.physics.startSystem(Phaser.Physics.ARCADE);
 
     //  A simple background for our game
-    game.add.sprite(startX, startY, 'background');
+    game.add.sprite(0, 0, 'background');
+    bullets = game.add.group();
+    bullets.enableBody = true;
+    bullets.physicsBodyType = Phaser.Physics.ARCADE;
+
+    bullets.createMultiple(50, 'arrow')
+    console.log(bullets)
+    bullets.setAll('checkWorldBounds', true);
+    bullets.setAll('outOfBoundsKill', true);
 
     //  The platforms group contains the ground and the 2 ledges we can jump on
     platforms = game.add.group();
@@ -52,6 +65,7 @@ angular.module('appFrame')
     //  Now let's create two ledges
     var ledge = platforms.create(400, 400, 'platform');
 
+
     ledge.body.immovable = true;
 
     ledge = platforms.create(-150, 250, 'platform');
@@ -65,11 +79,12 @@ angular.module('appFrame')
     player.body.bounce.y = 0.2
     player.body.gravity.y = 300
     player.body.collideWorldBounds = true
+    player.health = 3;
 
     cursors = game.input.keyboard.createCursorKeys();
 
-    //player.animations.add('left', [8, 9, 10, 11, 12, 13, 14, 15], 15, true);
-    //player.animations.add('right', [0, 1, 2, 3, 4, 5, 6, 7], 15, true);
+    // player.animations.add('left', [0, 1, 2, 3, 12, 13, 14, 15], 15, true);
+    // player.animations.add('right', [0, 1, 2, 3,4,5,6], 12, true);
 
     enemies = [];
     socket.emit('new player', { x: player.x, y: player.y })
@@ -77,23 +92,59 @@ angular.module('appFrame')
     setEventHandlers()
 
   }
+  function fire(){
+    if (game.time.now > nextFire && bullets.countDead() > 0){
+      nextFire = game.time.now + fireRate;
+      bullet = bullets.getFirstDead();
+      bullet.reset(player.x + 80, player.y + 10)
+      bullet.damageAmount = 1
+      game.physics.arcade.moveToPointer(bullet, 400);
+      console.log(bullet)
+
+    }
+  }
 
   function update() {
+    //console.log(player)
 
+    for (var i = 0; i < enemies.length; i++)
+    {//console.log('in if')
+      if (enemies[i].alive)
+      { //console.log('in alive')
+        //enemiesAlive++;
+        //game.physics.arcade.collide(tank, enemies[i].player);
+        game.physics.arcade.overlap(bullets, enemies[i].player, bulletHitEnemy, null, this);
+        //enemies[i].update();
+      }
+    }
 
     socket.emit('move player', { x: player.body.x, y: player.body.y })
+    if (bullet){
 
+    }
     game.physics.arcade.collide(player, platforms)
-
     player.body.velocity.x = 0;
 
     if(cursors.left.isDown){
+
       player.body.velocity.x = -150;
     } else if (cursors.right.isDown){
+      // player.animations.play('right')
       player.body.velocity.x = 150
     } else if (cursors.up.isDown && player.body.touching.down){
       player.body.velocity.y = -350;
     }
+
+    if (game.input.activePointer.isDown)
+    {
+      fire();
+    }
+  }
+  function render() {
+
+    game.debug.text('Active Bullets: ' + bullets.countLiving() + ' / ' + bullets.total, 32, 32);
+    game.debug.spriteInfo(sprite, 32, 450);
+
   }
 
   //EVENT HANDLERS
@@ -132,7 +183,7 @@ function onNewPlayer (data) {
 
 
   // Add new player to the remote players array
-  enemies.push(new RemotePlayer(data.id, game, player, data.x, data.y))
+  enemies.push(new RemotePlayer(data.id, game, player, data.x, data.y, bullets))
 }
 
 
@@ -164,6 +215,15 @@ function onMovePlayer (data) {
   movePlayer.player.x = data.x
   movePlayer.player.y = data.y
 }
+
+function bulletHitEnemy(player, bullet){
+  console.log('bullet hit')
+  console.log(player)
+  
+  bullet.kill();
+  enemies[player.name].damage()
+}
+
 
 function playerById (id) {
   for (var i = 0; i < enemies.length; i++) {

@@ -1,6 +1,6 @@
 /* global game */
 
-var RemotePlayer = function (index, game, player, startX, startY) {
+var RemotePlayer = function (index, game, player, startX, startY, bullets) {
   var x = startX
   var y = startY
 
@@ -8,6 +8,9 @@ var RemotePlayer = function (index, game, player, startX, startY) {
   this.health = 3
   this.player = player
   this.alive = true
+
+  //this.player.body.collide(bullets)
+  //game.physics.arcade.overlap(this.player, bullets, damagePlayer, null, this)
 
   this.player = game.add.sprite(x, y, 'char')
 
@@ -22,8 +25,26 @@ var RemotePlayer = function (index, game, player, startX, startY) {
   //this.player.body.bounce.y = 0.2;
   //this.player.body.gravity.y = 300;
   
-
+  game.physics.enable(this.player, Phaser.Physics.ARCADE);
   this.lastPosition = { x: x, y: y }
+}
+
+RemotePlayer.prototype.damage = function() {
+
+    this.health -= 1;
+
+    if (this.health <= 0)
+    {
+        this.alive = false;
+
+        this.player.kill();
+
+
+        return true;
+    }
+
+    return false;
+
 }
 
 RemotePlayer.prototype.update = function () {
